@@ -1,5 +1,6 @@
 """
-使用cifar-10数据集，实现神经元二分类
+使用cifar-10数据集, 实现神经元多分类模型
+使用多个神经元做输出
 """
 import os
 
@@ -31,11 +32,10 @@ class CifarData:
 
         for file_name in file_names:
             data, labels = load_data(file_name)
-            for item, label in zip(data, labels):
-                # filter (0、1)
-                if label in [0, 1]:
-                    all_data.append(item)
-                    all_labels.append(label)
+
+            # 包含全部数据，不做filter, 10个类
+            all_data.append(data)
+            all_labels.append(labels)
 
         self._data = np.vstack(all_data)  # 纵向合成矩阵
         self._data = self._data / 127.5 - 1  # 归一化，解决梯度消失¬
@@ -97,21 +97,34 @@ x = tf.placeholder(tf.float32, [None, 3072])
 y = tf.placeholder(tf.int64, [None])
 
 # tf.get_variable 获取变量
-# w: (3071, 1)
+# w: (3071, 10)
 # initializer 初始化
 w = tf.get_variable(name='w',
-                    shape=[x.get_shape()[-1], 1],
+                    shape=[x.get_shape()[-1], 10],
                     initializer=tf.random_normal_initializer(0, 1),  # 使用正态分布初始化w
                     )
-# b: (1,)
+# b: (10,)
 b = tf.get_variable(name='b',
-                    shape=[1],
+                    shape=[10],
                     initializer=tf.constant_initializer(0.0),
                     )
 
-# [None, 3072] * [3072, 1] = [None, 1]   (tf.matmul 矩阵乘法)
+# [None, 3072] * [3072, 10] = [None, 10]   (tf.matmul 矩阵乘法)
 y_ = tf.matmul(x, w) + b
 
+"""
+# 平方差损失函数
+p_y = tf.nn.softmax(y_)
+# 对y进行one hot编码
+y_one_hot = tf.one_hot(y, 10, dtype=tf.float32)
+# 损失函数
+loss = tf.reduce_mean(tf.square(y_one_hot - p_y))
+"""
+
+# 交叉熵损失函数
+loss = tf.losses.sparse_softmax_cross_entropy(labels=y, logits=y_)
+
+"""
 # 使用sigmoid变成概率值, 得到y=1的概率值. [None, 1]
 p_y_1 = tf.nn.sigmoid(y_)
 
@@ -120,12 +133,13 @@ y_reshaped = tf.reshape(y, (-1, 1))
 y_reshaped_float = tf.cast(y_reshaped, tf.float32)
 # 损失函数
 loss = tf.reduce_mean(tf.square(y_reshaped_float - p_y_1))
+"""
 
 # 预测值
-predict = p_y_1 > 0.5
+predict = tf.argmax(y_, 1)
 
 # 准确率
-correct_prediction = tf.equal(tf.cast(predict, tf.int64), y_reshaped)
+correct_prediction = tf.equal(predict, y)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float64))
 
 with tf.name_scope("train_op"):
