@@ -142,7 +142,7 @@ with tf.Session() as sess:
     for i in range(train_steps):
         batch_data, batch_labels = train_data.next_batch(batch_size)
 
-        loss_val, acc_val, _ = sess.run([loss, accuracy, train_op],
+        loss_val, acc_val, _ = sess.run(fetches=[loss, accuracy, train_op],
                                         feed_dict={x: batch_data, y: batch_labels})
         if (i + 1) % 500 == 0:
             print("[Train] step: %s, loss: %4.5f, acc: %4.5f" % (i + 1, loss_val, acc_val))
@@ -152,7 +152,7 @@ with tf.Session() as sess:
             all_test_acc_val = []
             for j in range(test_steps):
                 test_batch_data, test_batch_labels = test_data.next_batch(batch_size)
-                test_acc_val = sess.run([accuracy],
+                test_acc_val = sess.run(fetches=[accuracy],
                                         feed_dict={x: test_batch_data, y: test_batch_labels})
                 all_test_acc_val.append(test_acc_val)
 
