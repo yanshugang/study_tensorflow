@@ -1,9 +1,9 @@
 import numpy as np
 import tensorflow as tf
 
-TRAIN_DATA = "ptb.train.txt"  # 训练数据路径
-EVAL_DATA = "ptb.valid.txt"  # 验证数据路径
-TEST_DATA = "ptb.test.txt"  # 测试数据路径
+TRAIN_DATA = "./used_data/ptb.train"  # 训练数据路径(词向量)
+EVAL_DATA = "./used_data/ptb.valid"  # 验证数据路径
+TEST_DATA = "./used_data/ptb.test"  # 测试数据路径
 HIDDEN_SIZE = 300  # 隐藏层规模
 NUM_LAYERS = 2  # 深层循环神经网络中LSTM结构的层数
 VOCAB_SIZE = 10000  # 词典规模
@@ -19,7 +19,6 @@ MAX_GRAD_NORM = 5  # 用于控制梯度膨胀的梯度大小上限
 SHARE_EMB_AND_SOFTMAX = True  # 在softmax层和词向量层之间共享参数
 
 
-# 通过一个PTBModel类来描述模型，这样方便维护循环神经网路中的状态
 class PTBModel(object):
     def __init__(self, is_training, batch_size, num_steps):
         # 记录使用的batch大小和截断长度
@@ -32,9 +31,7 @@ class PTBModel(object):
 
         # 定义使用LSTM结构为循环体结构且使用dropout的深层循环神经网络
         dropout_keep_prob = LSTM_KEEP_PROB if is_training else 1.0
-        lstm_cells = [tf.nn.rnn_cell.DropoutWrapper(cell=tf.nn.rnn_cell.BasicLSTMCell(HIDDEN_SIZE),
-                                                    output_keep_prob=dropout_keep_prob)
-                      for _ in range(NUM_LAYERS)]
+        lstm_cells = [tf.nn.rnn_cell.DropoutWrapper(tf.nn.rnn_cell.LSTMCell(HIDDEN_SIZE, name="basic_lstm_cell"), output_keep_prob=dropout_keep_prob) for _ in range(NUM_LAYERS)]
         cell = tf.nn.rnn_cell.MultiRNNCell(lstm_cells)
 
         # 初始化最初的状态，即全零的向量。
@@ -58,8 +55,8 @@ class PTBModel(object):
                 # TODO：啥意思
                 if time_step > 0:
                     tf.get_variable_scope().reuse_variables()
-                    cell_output, state = cell(inputs[:, time_step, :], state)
-                    outputs.append(cell_output)
+                cell_output, state = cell(inputs[:, time_step, :], state)
+                outputs.append(cell_output)
 
         # 把输出队列展开成[batch, hidden_size*num_steps]的形状
         # 然后再reshape成[batch*num_step, hidden_size]的形状

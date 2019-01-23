@@ -5,21 +5,19 @@
 
 import codecs
 import collections
-import numpy as np
-import tensorflow as tf
-
 from operator import itemgetter
 
 
-def clear_data():
-    # 训练集数据文件
-    RAW_DATA = "./data/ptb.train.txt"
-    # 输出的词汇表文件
-    VOCAB_OUTPUT = "ptb.vocab"
+def clear_data(input_file, clearn_file):
+    """
 
+    :param input_file:
+    :param output_file:
+    :return:
+    """
     # 统计词频
     counter = collections.Counter()
-    with codecs.open(RAW_DATA, "r", "utf-8") as f:
+    with codecs.open(input_file, "r", "utf-8") as f:
         for line in f:
             for word in line.strip().split():
                 counter[word] += 1
@@ -36,22 +34,21 @@ def clear_data():
     if len(sorted_words) > 10000:
         sorted_words = sorted_words[:10000]
 
-    with codecs.open(VOCAB_OUTPUT, "w", "utf-8") as file_output:
+    with codecs.open(clearn_file, "w", "utf-8") as file_output:
         for word in sorted_words:
             file_output.write(word + "\n")
 
 
-def word2num():
+def word2num(input_file, clearn_file, output_file):
     """
     将单词转换为编号
-    :return:
     """
     RAW_DATA = "./data/ptb.train.txt"
     VOCAB = "ptb.vocab"
     OUTPUT_DATA = "ptb.train"
 
     # 建立词汇到编号的映射（单词编号即为行号）
-    with codecs.open(VOCAB, "r", "utf-8") as f_vocab:
+    with codecs.open(clearn_file, "r", "utf-8") as f_vocab:
         vocab = [w.strip() for w in f_vocab.readlines()]
     word_to_id = {k: v for (k, v) in zip(vocab, range(len(vocab)))}
 
@@ -59,8 +56,8 @@ def word2num():
     def get_id(word):
         return word_to_id[word] if word in word_to_id else word_to_id["<unk>"]
 
-    fin = codecs.open(RAW_DATA, "r", "utf-8")
-    fout = codecs.open(OUTPUT_DATA, "w", "utf-8")
+    fin = codecs.open(input_file, "r", "utf-8")
+    fout = codecs.open(output_file, "w", "utf-8")
     for line in fin:
         words = line.strip().split() + ["<eos>"]
         out_line = " ".join([str(get_id(w)) for w in words]) + "\n"
@@ -69,5 +66,14 @@ def word2num():
     fout.close()
 
 
+def main():
+    input_file = "./source_data/ptb.valid.txt"
+    clearn_file = "./valid.clearn"
+    output_file = "./used_data/ptb.valid"
+
+    clear_data(input_file, clearn_file)
+    word2num(input_file, clearn_file, output_file)
+
+
 if __name__ == '__main__':
-    word2num()
+    main()
