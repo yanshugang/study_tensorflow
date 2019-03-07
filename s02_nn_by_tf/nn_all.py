@@ -19,19 +19,18 @@ y_ = tf.placeholder(dtype=tf.float32,
                     shape=(None, 1),
                     name='y_input')
 
+# 定义神经网络前向传播的过程
 a = tf.matmul(x, w1)
 y = tf.matmul(a, w2)
 
 # 定义损失函数和反向传播的算法
 y = tf.sigmoid(y)
-
 # 交叉熵
 cross_entropy = -tf.reduce_mean(
     y_ * tf.log(tf.clip_by_value(y, 1e-10, 1.0))
     +
     (1 - y) * tf.log(tf.clip_by_value(1 - y, 1e-10, 1.0))
 )
-
 train_step = tf.train.AdadeltaOptimizer(0.001).minimize(cross_entropy)
 
 # 通过随机数生成一个模拟数据集
@@ -45,6 +44,9 @@ with tf.Session() as sess:
     # 初始化全部变量
     init_op = tf.global_variables_initializer()
     sess.run(init_op)
+
+    print(sess.run(w1))
+    print(sess.run(w2))
 
     # 设定训练的轮数
     STEPS = 5000
@@ -62,5 +64,7 @@ with tf.Session() as sess:
             total_cross_entropy = sess.run(fetches=cross_entropy,
                                            feed_dict={x: X, y_: Y})
 
-# 验证结果
-# TODO:
+        print("After %s training steps, cross entropy on all data is %s" % (i, total_cross_entropy))
+
+    print(sess.run(w1))
+    print(sess.run(w2))
