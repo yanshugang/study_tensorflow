@@ -64,7 +64,7 @@ with tf.Session() as sess:
             total_cross_entropy = sess.run(fetches=cross_entropy,
                                            feed_dict={x: X, y_: Y})
 
-        print("After %s training steps, cross entropy on all data is %s" % (i, total_cross_entropy))
+            print("After %s training steps, cross entropy on all data is %s" % (i, total_cross_entropy))
 
     print(sess.run(w1))
     print(sess.run(w2))

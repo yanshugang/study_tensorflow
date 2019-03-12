@@ -116,3 +116,4 @@ dmypy.json
 
 .idea/
 cifar-10-batches-py/
+s03_mnist/MNIST_data/
