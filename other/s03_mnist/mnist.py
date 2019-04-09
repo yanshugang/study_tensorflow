@@ -1,4 +1,4 @@
-f  # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # @Author: ysg
 # @Contact: yanshugang11@163.com
@@ -128,6 +128,7 @@ def train(mnist):
         for i in range(TRAINING_STEPS):
             # TODO:
             pass
+
 
 def main(argv=None):
     # 下载数据
