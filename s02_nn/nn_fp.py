@@ -10,8 +10,8 @@
 import tensorflow as tf
 
 # 声明w1、w2两个变量，并通过seed参数设定随机种子，保证每次运行的结果一样。
-w1 = tf.Variable(tf.random_normal((2, 3), stddev=1, seed=1))
-w2 = tf.Variable(tf.random_normal((3, 1), stddev=1, seed=1))
+w1 = tf.Variable(tf.random_normal(shape=(2, 3), stddev=1, seed=1))
+w2 = tf.Variable(tf.random_normal(shape=(3, 1), stddev=1, seed=1))
 
 # # 特征向量（使用常量表示）
 # x = tf.constant([[0.7, 0.9]])
