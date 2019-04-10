@@ -12,13 +12,13 @@ INPUT_NODE = 784  # 输入层的节点数。对于MNIST数据集，这个就等�
 OUTPUT_NODE = 10  # 输出层的节点数。这个等于类别的数目。因为在MNIST数据集中需要区分的是0~9这10个数字，所以输出层的节点数为10。
 
 # 配置神经网络参数
-LAYER1_NODE = 500  # 隐藏层节点数。这里使用只有一个隐藏层的网络结构
-BATCH_SIZE = 100  # 一个训练batch中的训练数据个数。TODO：数字越小时，训练过程越接近随机梯度下降；数字越大时，训练越接近梯度下降；
+LAYER1_NODE = 500  # 隐藏层节点数。这里使用只有一个隐藏层的网络结构。
+BATCH_SIZE = 100  # 一个训练batch中的训练数据个数。数字越小时，训练过程越接近随机梯度下降；数字越大时，训练越接近梯度下降；
 LEARNING_RATE_BASE = 0.8  # 基础的学习率
 LEARING_RATE_DECAY = 0.99  # 学习率的衰减率
-REGULARIZATION_RATE = 0.0001  # TODO：描述模型复杂度的正则化项在损失函数中的系数
+REGULARIZATION_RATE = 0.0001  # 描述模型复杂度的正则化项在损失函数中的系数
 TRAINING_STEPS = 30000  # 训练轮数
-MOVING_AVERAGE_DECAY = 0.99  # TODO：滑动平均衰减率
+MOVING_AVERAGE_DECAY = 0.99  # 滑动平均衰减率
 
 
 # 一个辅助函数，给定神经网络的输入和所有参数，计算神经网络的前向传播结果。在这里定义了一个使用ReLU激活函数的三层全连接神经网络。
@@ -26,7 +26,7 @@ MOVING_AVERAGE_DECAY = 0.99  # TODO：滑动平均衰减率
 # 在这个函数中也支持传入用于计算参数平均值的类，这样方便在测试时使用滑动平均模型。
 def inference(input_tensor, avg_class, weights1, biases1, weights2, biases2):
     # 当没有提供滑动平均类时，直接使用参数当前的取值。
-    if avg_class == None:
+    if avg_class is None:
         # 计算隐藏层的前向传播结果，这里使用了ReLU激活函数。
         layer1 = tf.nn.relu(tf.matmul(input_tensor, weights1) + biases1)
 
@@ -110,7 +110,8 @@ def train(mnist):
 
     # 检测使用了滑动平均模型的神经网络前向传播结果是否正确。
     # tf.argmax(average_y, 1)表示每一个样例的预测答案。其中average_y是一个batch_size * 10的二维数组，每一行表示一个样例的前向传播结果。
-    # todo:
+    # tf.argmax的第二个参数"1"表示选取最大值的操作仅在第一个维度中进行，也就是说，只在每一行选取最大值对应的下标。
+    # 于是得到的结果是一个长度weibatch的一维数组，这个一维数组中的值就表示了每一个样例对应的数字识别结果。tf.equal判断两个张量每一维是否相等，如果相等返回True，否则Flase。
     correct_prediction = tf.equal(tf.argmax(average_y, 1), tf.argmax(y_, 1))
     # 这个运算首先将一个布尔型的数值转换为实数型，然后计算平均值。这个平均值就是模型在这一组数据上的正确率。
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -126,8 +127,21 @@ def train(mnist):
 
         # 迭代地训练神经网络
         for i in range(TRAINING_STEPS):
-            # TODO:
-            pass
+            # 每1000轮输出一次在验证集上的测试结果
+            if i % 1000 == 0:
+                # 计算滑动平均模型在验证数据上的结果。因为MNIST数据集比较小，所以一次可以处理所有的验证数据。
+                # 为了方便计算，本样例程序没有将样例程序划分为更小的batch。
+                # 当神经网络模型比较复杂或者验证数据比较大时，太大的batch会导致计算时间过长甚至发生内存溢出的错误。
+                validate_acc = sess.run(accuracy, feed_dict=validate_feed)
+                print("After %d training steps, validation accuracy using average model is %g" % (i, validate_acc))
+
+            # 产生这一轮使用的一个batch的训练数据，并运行训练过程。
+            xs, ys = mnist.train.next_batch(BATCH_SIZE)
+            sess.run(train_op, feed_dict={x: xs, y_: ys})
+
+        # 在训练结束之后，在测试数据上检测神经网络模型的最终正确率。
+        test_acc = sess.run(accuracy, feed_dict=test_feed)
+        print("After %d training steps, test accuracy using average model is %g" % (TRAINING_STEPS, test_acc))
 
 
 def main(argv=None):

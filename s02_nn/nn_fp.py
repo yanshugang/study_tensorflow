@@ -5,7 +5,7 @@
 # @Time: 2019/3/7 下午5:04
 
 """
-向前传播
+向前传播 Forward propagation
 """
 import tensorflow as tf
 
