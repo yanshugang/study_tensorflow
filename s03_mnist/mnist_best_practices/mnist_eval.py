@@ -25,7 +25,7 @@ def evaluate(mnist):
         # 定义输入输出的格式
         x = tf.placeholder(tf.float32, [None, mnist_inference.INPUT_NODE], name="x-input")
         y_ = tf.placeholder(tf.float32, [None, mnist_inference.OUTPUT_NODE], name="y-input")
-        validate_feed = {x: mnist.validation.image,
+        validate_feed = {x: mnist.validation.images,
                          y_: mnist.validation.labels}
 
         # 直接通过调用封装好的函数来计算前向传播的结果。因为测试时不关注正则化损失的值，所以这里用于计算正则化损失的函数被设置为None。
@@ -50,7 +50,7 @@ def evaluate(mnist):
                     # 加载模型
                     saver.restore(sess, ckpt.model_checkpoint_path)
                     # 通过文件名得到模型保存时迭代的轮数。
-                    global_step = ckpt.model_ckeckpoint_path.split("/")[-1].split("-")[-1]
+                    global_step = ckpt.model_checkpoint_path.split("/")[-1].split("-")[-1]
                     accuracy_score = sess.run(accuracy, feed_dict=validate_feed)
                     print("After %s training step, validation accuracy=%g" % (global_step, accuracy_score))
                 else:
@@ -60,7 +60,7 @@ def evaluate(mnist):
 
 
 def main(argv=None):
-    mnist = input_data.read_data_sets("/path/to/mnist", one_hot=True)
+    mnist = input_data.read_data_sets("../MNIST_data/", one_hot=True)
     evaluate(mnist)
 
 
